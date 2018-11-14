@@ -4,6 +4,9 @@ const querystring = require("querystring");
 
 request.debug = true;
 
+/**
+ * 随机选择一个浏览器代理
+ */
 function randomUserAgent() {
   const userAgentList = [
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36",
@@ -30,6 +33,17 @@ function randomUserAgent() {
   return userAgentList[num];
 }
 
+/**
+ * 发起api 请求
+ *
+ * @param {*} host
+ * @param {*} path
+ * @param {*} method
+ * @param {*} data
+ * @param {*} cookie
+ * @param {*} callback
+ * @param {*} errorcallback
+ */
 function createWebAPIRequest(
   host,
   path,
@@ -43,9 +57,12 @@ function createWebAPIRequest(
   if (cookie.match(/_csrf=[^(;|$)]+;/g))
     data.csrf_token = cookie.match(/_csrf=[^(;|$)]+/g)[0].slice(6);
   else data.csrf_token = "";
+
   const proxy = cookie.split("__proxy__")[1];
   cookie = cookie.split("__proxy__")[0];
   const cryptoreq = Encrypt(data);
+
+  //配置项
   const options = {
     url: `http://${host}${path}`,
     method: method,
@@ -65,10 +82,12 @@ function createWebAPIRequest(
     }),
     proxy: proxy
   };
+
   console.log(
     `[request] ${options.method} ${options.url} proxy:${options.proxy}`
   );
 
+  //发起请求
   request(options, function(error, res, body) {
     if (error) {
       console.error(error);
@@ -87,6 +106,12 @@ function createWebAPIRequest(
   });
 }
 
+/**
+ *
+ * @param {*} path
+ * @param {*} method
+ * @param {*} data
+ */
 function createRequest(path, method, data) {
   return new Promise((resolve, reject) => {
     const options = {
@@ -113,6 +138,7 @@ function createRequest(path, method, data) {
     });
   });
 }
+
 module.exports = {
   createWebAPIRequest,
   createRequest
